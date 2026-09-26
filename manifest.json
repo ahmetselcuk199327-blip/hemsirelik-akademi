@@ -1,7 +1,8 @@
 {
   "name": "Hemşirelik Akademi 🩺",
   "short_name": "Hemşirelik",
-  "description": "Vaka tabanlı hemşirelik bilgi oyunu - acil servis, bilgi yarisi, terim eslestirme.",
+  "description": "Vaka tabanlı hemşirelik bilgi oyunu - günün vakası, kategori meydanı, maraton, bilgi sprinti, terim eşleştirme.",
+  "author": "HANSoft",
   "lang": "tr",
   "dir": "ltr",
   "categories": ["education", "medical"],
