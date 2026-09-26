@@ -1,4 +1,4 @@
-const SURUM = "hemsire-akademi-v1.2.0";
+const SURUM = "hemsire-akademi-v1.3.0";
 const DOSYALAR = [
   "./", "./index.html", "./veri.js", "./oyun.js",
   "./manifest.json", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"
