@@ -1,7 +1,7 @@
 /* =====================================================================
    HEMŞİRELİK AKADEMİ - OYUN MOTORU
    ===================================================================== */
-const SURUM = "1.2.0";
+const SURUM = "1.3.0";
 const TASARIMCI = "HANSoft";
 const KAYIT_ANAHTAR = "hemsire_akademi_v1";
 const HARF = ["A", "B", "C", "D", "E"];
