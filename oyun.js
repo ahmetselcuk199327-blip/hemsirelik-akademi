@@ -287,8 +287,97 @@ function rozetCiz() {
   }).join("");
 }
 
+/* ---------------- PROFİL ---------------- */
+const UNVANLAR = [
+  { e: 2, ad: "Çaylak" }, { e: 4, ad: "Stajyer" }, { e: 6, ad: "Hemşire" },
+  { e: 9, ad: "Kıdemli Hemşire" }, { e: 12, ad: "Uzman Hemşire" },
+  { e: 15, ad: "Başhemşire" }, { e: 19, ad: "Klinik Mentor" }, { e: 999, ad: "Hemşirelik Doçenti" }
+];
+const PALETLER = [
+  { a: "#22d3ee", b: "#3b82f6" }, { a: "#34d399", b: "#22d3ee" },
+  { a: "#fbbf24", b: "#f97316" }, { a: "#f472b6", b: "#a78bfa" },
+  { a: "#a78bfa", b: "#6366f1" }
+];
+
+function unvanHesapla(lv) { return (UNVANLAR.find(u => lv <= u.e) || UNVANLAR[UNVANLAR.length - 1]).ad; }
+function paletHesapla(lv) { return PALETLER[Math.min(PALETLER.length - 1, Math.floor((lv - 1) / 4))]; }
+
+/* baş harflerden avatar üret */
+function avatarCiz(lv, ad) {
+  const p = paletHesapla(lv);
+  const gid = "av" + lv;
+  const bas = (ad || "HA").trim().split(/\s+/).map(w => w[0] || "").slice(0, 2).join("").toUpperCase();
+  return '<svg viewBox="0 0 100 100" role="img" aria-label="Profil avatarı">' +
+    '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="1" y2="1">' +
+    '<stop offset="0" stop-color="' + p.a + '"/><stop offset="1" stop-color="' + p.b + '"/>' +
+    "</linearGradient></defs>" +
+    '<rect width="100" height="100" fill="url(#' + gid + ')"/>' +
+    '<circle cx="50" cy="38" r="20" fill="rgba(255,255,255,.9)"/>' +
+    '<path d="M14 104c0-22 16-32 36-32s36 10 36 32z" fill="rgba(255,255,255,.9)"/>' +
+    '<rect x="42" y="16" width="16" height="42" rx="3" fill="rgba(255,255,255,.28)"/>' +
+    '<text x="50" y="94" text-anchor="middle" font-size="19" font-weight="800" ' +
+    'font-family="system-ui,sans-serif" fill="rgba(4,16,32,.82)">' + bas + "</text></svg>";
+}
+
+function sayacYaz(id, hedef, ek) {
+  const n = el(id);
+  if (!n) return;
+  const bic = D.ayarlar.hareket;
+  if (!bic) { n.textContent = hedef + (ek || ""); return; }
+  const bas = Number(String(n.textContent).replace(/\D/g, "")) || 0;
+  const t0 = performance.now(), sure = 700;
+  (function adim(t) {
+    const o = Math.min(1, (t - t0) / sure);
+    const g = bas + (hedef - bas) * (1 - Math.pow(1 - o, 3));
+    n.textContent = Math.round(g) + (ek || "");
+    if (o < 1) requestAnimationFrame(adim);
+  })(t0);
+}
+
+function profilCiz() {
+  const h = seviyeHesapla(D.xp);
+  const oran = Math.min(1, h.kalan / h.gereken);
+  const p = paletHesapla(h.lv);
+
+  el("avatar").innerHTML = avatarCiz(h.lv, "HA");
+  el("profil-unvan").textContent = unvanHesapla(h.lv);
+  el("profil-lv").textContent = h.lv;
+  el("profil-xp").textContent = h.kalan + " / " + h.gereken + " XP";
+  el("profil-chip").innerHTML = [
+    '<span class="chip altın">⭐ ' + D.xp + ' XP</span>',
+    D.gunSeri > 1 ? '<span class="chip sicak">🔥 ' + D.gunSeri + ' günlük seri</span>' : "",
+    '<span class="chip">🏅 ' + rozetSayisi() + " / " + ROZETLER.length + "</span>",
+    '<span class="chip">📚 ' + (D.dogru + D.yanlis ? Math.round(D.dogru / (D.dogru + D.yanlis) * 100) : 0) + "% başarı</span>"
+  ].join("");
+
+  el("halka").style.strokeDashoffset = 276.5 * (1 - oran);
+  el("xp-dolgu").style.width = (oran * 100) + "%";
+
+  const t = D.toplam ? Math.round(D.dogru / D.toplam * 100) : 0;
+  sayacYaz("pf-toplam", D.toplam);
+  sayacYaz("pf-dogru", D.dogru);
+  sayacYaz("pf-oran", t, "%");
+  sayacYaz("pf-seri", D.gunSeri || 0);
+  sayacYaz("pf-rozet", rozetSayisi());
+  sayacYaz("pf-favori", Object.keys(D.favori).length);
+
+  const kazanilan = ROZETLER.filter(r => D.rozetler[r.id]);
+  const vitrin = el("profil-vitrin");
+  if (!kazanilan.length) {
+    vitrin.innerHTML = '<div class="vitrinBos">Henüz rozet yok. İlk sorunu çöz, rozetler burada birikecek!</div>';
+  } else {
+    vitrin.innerHTML = kazanilan.map(r =>
+      '<div class="vitrinKutu a" title="' + r.acik + '"><div class="i">' + r.ikon + "</div>" +
+      '<div class="n">' + r.ad + "</div></div>").join("") +
+      '<div class="vitrinKutu kilit" style="grid-column:1/-1">' +
+      '<div class="n">' + (ROZETLER.length - kazanilan.length) + " rozet seni bekliyor</div></div>";
+  }
+
+  el("profil-takvim").innerHTML = takvimHtml();
+}
+
 /* ---------------- GEÇİŞ ---------------- */
-const EKRANLAR = { ana: "ek-ana", defter: "ek-defter", istat: "ek-istat", rozet: "ek-rozet", ayar: "ek-ayar", oyun: "ek-oyun" };
+const EKRANLAR = { ana: "ek-ana", profil: "ek-profil", defter: "ek-defter", istat: "ek-istat", rozet: "ek-rozet", ayar: "ek-ayar", oyun: "ek-oyun" };
 
 let defSekme = "yanlis";
 
@@ -299,6 +388,7 @@ function sayfaGoster(ad) {
   document.querySelectorAll("#alt-menu button").forEach(b =>
     b.classList.toggle("secili", b.dataset.sayfa === ad));
   if (ad === "ana") { ustGuncelle(); gunKutuCiz(); }
+  if (ad === "profil") profilCiz();
   if (ad === "defter") defterCiz();
   if (ad === "istat") istatCiz();
   if (ad === "rozet") rozetCiz();
@@ -927,6 +1017,11 @@ function istatCiz() {
   }).join("");
 
   const bugun = tarihBugun();
+  el("takvim").innerHTML = takvimHtml();
+}
+
+function takvimHtml() {
+  const bugun = tarihBugun();
   let html = "";
   for (let i = 27; i >= 0; i--) {
     const g = gunEkle(bugun, -i);
@@ -934,7 +1029,7 @@ function istatCiz() {
     const sinif = n === 0 ? "" : n < 5 ? "b1" : n < 15 ? "b2" : "b3";
     html += '<div class="gun ' + sinif + (g === bugun ? " bugun" : "") + '" title="' + g + ": " + n + ' soru"></div>';
   }
-  el("takvim").innerHTML = html;
+  return html;
 }
 
 function ayarCiz() {
@@ -1028,6 +1123,9 @@ el("ay-dosya").addEventListener("change", function () {
   this.value = "";
 });
 el("ay-paylas").addEventListener("click", function () { Sesi.tik(); paylas(); });
+["profil-paylas", "profil-paylas2"].forEach(function (id) {
+  el(id).addEventListener("click", function () { Sesi.tik(); paylas(); });
+});
 
 el("def-temizle").addEventListener("click", function () {
   if (Object.keys(D.defter).length === 0) { toast("Defter zaten boş"); return; }
