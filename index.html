@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0e1a2e">
+<meta name="description" content="Vaka tabanlı hemşirelik bilgi oyunu: acil servis, bilgi sprinti, terim eşleştirme.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hemşirelik">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Hemşirelik Akademi</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0b1220; --bg2:#0e1a2e; --card:#152238; --card2:#1b2c47; --line:#2a3d5c;
+  --txt:#eaf1ff; --mut:#93a4c2; --acc:#22d3ee; --acc2:#818cf8;
+  --ok:#34d399; --no:#f87171; --warn:#fbbf24;
+  --sat:env(safe-area-inset-top); --sab:env(safe-area-inset-bottom);
+}
+html,body{height:100%}
+body{
+  background:radial-gradient(1200px 700px at 80% -10%,#1b2c47 0%,var(--bg) 55%);
+  color:var(--txt);font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  overscroll-behavior-y:none;user-select:none;line-height:1.45;
+}
+button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer}
+#uyg{position:relative;max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+.ekran{display:none;flex:1;flex-direction:column;padding:calc(12px + var(--sat)) 14px calc(14px + var(--sab))}
+.ekran.aktif{display:flex}
+
+/* üst bar */
+.ust{display:flex;align-items:center;gap:10px;padding:4px 2px 12px}
+.ust h1{font-size:17px;font-weight:800;letter-spacing:.3px}
+.rozet{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:999px;
+  padding:5px 10px;font-size:11.5px;font-weight:700;color:var(--mut);white-space:nowrap}
+.pill b{color:var(--txt)}
+.pill.altin{color:#fde68a}
+.cikis{background:var(--card);border:1px solid var(--line);border-radius:999px;
+  padding:0 14px;min-height:40px;font-size:12.5px;font-weight:800;color:var(--mut)}
+
+/* kart */
+.kart{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);
+  border-radius:18px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.kart+.kart{margin-top:12px}
+.kart h2{font-size:16px;font-weight:800;margin-bottom:8px}
+.metin{font-size:14px;color:var(--mut)}
+.kucuk{font-size:12px;color:var(--mut)}
+
+/* mod kartları */
+.mod{
+  width:100%;text-align:left;display:flex;gap:12px;align-items:center;
+  background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--line);
+  border-radius:16px;padding:14px;margin-bottom:10px;transition:.15s
+}
+.mod:active{transform:scale(.98)}
+.mod .ikon{width:46px;height:46px;flex:0 0 46px;border-radius:14px;display:grid;place-items:center;font-size:22px}
+.mod .ad{font-weight:800;font-size:15px}
+.mod .ac{font-size:12px;color:var(--mut);margin-top:2px}
+.mod .ok{margin-left:auto;color:var(--ok);font-size:18px}
+
+/* ilerleme */
+.bar{height:9px;background:#0a1526;border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:99px;transition:width .3s}
+.ilerleme{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--mut);margin-bottom:6px}
+
+/* vaka */
+.hasta{background:#0f1c30;border:1px dashed var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+.hasta .ad{font-weight:800;font-size:15px}
+.hasta .demograf{font-size:11.5px;color:var(--acc);font-weight:700}
+.hasta .sikayet{margin-top:6px;font-size:13.5px;color:#dbe6ff}
+.vital{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+.vital div{background:#0a1526;border:1px solid var(--line);border-radius:10px;padding:7px 4px;text-align:center}
+.vital span{display:block;font-size:10px;color:var(--mut);font-weight:700}
+.vital b{font-size:14px}
+.vital .uyari b{color:var(--no)}
+.vital .uyari span{color:var(--no)}
+
+/* soru */
+.soru{font-size:16px;font-weight:800;line-height:1.4;margin:4px 0 14px}
+.soru small{display:block;font-weight:600;font-size:11.5px;color:var(--acc);margin-bottom:6px}
+.sik{width:100%;text-align:left;display:flex;gap:11px;align-items:flex-start;
+  background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:13px;margin-bottom:9px;transition:.15s}
+.sik:active{transform:scale(.985)}
+.sik .harf{width:28px;height:28px;flex:0 0 28px;border-radius:9px;background:#0a1526;border:1px solid var(--line);
+  display:grid;place-items:center;font-weight:800;font-size:13px}
+.sik .txt{font-size:14px;padding-top:3px}
+.sik.dogru{border-color:var(--ok);background:rgba(52,211,153,.12)}
+.sik.dogru .harf{background:var(--ok);color:#04241a;border-color:var(--ok)}
+.sik.yanlis{border-color:var(--no);background:rgba(248,113,113,.12)}
+.sik.yanlis .harf{background:var(--no);color:#2b0808;border-color:var(--no)}
+.sik.kilitli{opacity:.55}
+.sik.sesli{animation:glow 1.2s ease}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,0)}40%{box-shadow:0 0 0 5px rgba(248,113,113,.25)}}
+
+/* geri bildirim */
+.gb{margin-top:12px;border-radius:14px;padding:14px;border:1px solid var(--line);background:#0f1c30;display:none}
+.gb.gor{display:block;animation:patla .25s ease}
+@keyframes patla{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.gb.dg{border-color:var(--ok)} .gb.yr{border-color:var(--no)}
+.gb h3{font-size:15px;font-weight:800;margin-bottom:6px}
+.gb p{font-size:13.5px;color:#cfdcf5}
+.buton{width:100%;margin-top:12px;padding:14px;border-radius:14px;font-weight:800;font-size:15px;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));color:#04121c}
+.buton.ghost{background:var(--card);border:1px solid var(--line);color:var(--txt);margin-top:8px}
+.buton.aktif{opacity:.45;pointer-events:none}
+
+/* ipucu */
+.ipucu{width:100%;text-align:left;background:#12203a;border:1px solid var(--line);border-radius:12px;
+  padding:11px;font-size:13px;color:#cbd5e1;font-weight:600}
+.ipucu span{display:block;font-size:10.5px;color:var(--warn);font-weight:800;margin-bottom:3px}
+.ipucu.acik{border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.1);color:#fde68a}
+
+/* sonuç */
+.sonuc{text-align:center;padding:10px 0 4px}
+.sonuc .daire{width:112px;height:112px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;
+  border:6px solid var(--line);font-size:34px;font-weight:800;background:#0f1c30}
+.sonuc .daire i{display:block;font-style:normal;font-size:11px;color:var(--mut);font-weight:700}
+.sonuc h2{font-size:20px;font-weight:800}
+.istat{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:14px 0}
+.istat div{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:10px 5px;text-align:center}
+.istat b{display:block;font-size:19px;font-weight:800}
+.istat span{font-size:10.5px;color:var(--mut);font-weight:700}
+
+/* eşleştirme */
+.esles{border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:9px;background:var(--card)}
+.esles .bas{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.esles .bas b{font-size:14px}
+.esles .bas span{font-size:10.5px;color:var(--mut);font-weight:800;white-space:nowrap}
+.terim{width:100%;text-align:left;background:#0a1526;border:1.5px solid var(--line);border-radius:11px;
+  padding:10px;font-size:13.5px;margin-bottom:6px;transition:.15s}
+.terim:active{transform:scale(.985)}
+.terim.sectili{border-color:var(--acc);background:rgba(34,211,238,.12)}
+.terim.bitti{border-color:var(--ok);background:rgba(52,211,153,.14);color:#a7f3d0}
+.terim.yanlis{border-color:var(--no);background:rgba(248,113,113,.14)}
+
+/* kategori istatistikleri */
+.kat{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(42,61,92,.55)}
+.kat:last-child{border-bottom:0}
+.kat .nokta{width:11px;height:11px;border-radius:50%;flex:0 0 11px}
+.kat .ad{font-size:13.5px;font-weight:700;flex:1}
+.kat .y{font-size:11px;color:var(--mut);font-weight:700;white-space:nowrap}
+
+/* alt menü */
+.alt{display:flex;background:rgba(11,18,32,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);
+  padding:6px 6px calc(6px + var(--sab))}
+.alt button{flex:1;padding:8px 2px;border-radius:12px;font-size:10.5px;font-weight:800;color:var(--mut)}
+.alt button span{display:block;font-size:18px;margin-bottom:2px}
+.alt button.secili{color:var(--acc);background:rgba(34,211,238,.1)}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:calc(78px + var(--sab));transform:translateX(-50%);
+  background:#0f1c30;border:1px solid var(--line);border-radius:99px;padding:9px 17px;font-size:13px;
+  font-weight:700;opacity:0;pointer-events:none;transition:.25s;z-index:60;box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:90vw;text-align:center}
+#toast.gor{opacity:1;bottom:calc(88px + var(--sab))}
+
+/* uyarı */
+.uyari{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.4);border-radius:12px;
+  padding:11px 13px;font-size:12px;color:#fde68a;margin-top:12px}
+.temizle{width:100%;padding:12px;border-radius:12px;background:rgba(248,113,113,.12);
+  border:1px solid rgba(248,113,113,.45);color:#fca5a5;font-weight:800;font-size:13px;margin-top:10px}
+</style>
+</head>
+<body>
+<div id="uyg">
+
+  <!-- ============ ANA MENÜ ============ -->
+  <section class="ekran aktif" id="ek-ana">
+    <div class="ust">
+      <h1>Hemşirelik Akademi</h1>
+      <div class="rozet">
+        <span class="pill altin" id="p-seviye">Lv 1</span>
+        <span class="pill" id="p-xp">0 XP</span>
+      </div>
+    </div>
+
+    <div class="kart" style="text-align:center;padding:20px 16px">
+      <div style="font-size:44px;line-height:1">🩺</div>
+      <div style="font-weight:800;font-size:18px;margin-top:6px">Nöbet Hazırlığı</div>
+      <div class="metin" style="margin-top:4px">Vaka çöz, terim eşleştir, bilgini pekiştir</div>
+      <div class="ilerleme" style="margin-top:14px">
+        <span id="xpi">Seviye 1</span>
+        <span style="margin-left:auto" id="xps">0 / 100 XP</span>
+      </div>
+      <div class="bar"><i id="xpbar" style="width:0%"></i></div>
+    </div>
+
+    <div class="ust" style="padding:16px 2px 8px"><h1 style="font-size:13px;color:var(--mut)">OYUN MODLARI</h1></div>
+    <button class="mod" data-git="vaka">
+      <div class="ikon" style="background:rgba(255,107,139,.16)">🚨</div>
+      <div><div class="ad">Acil Servis Vakası</div><div class="ac">Vaka ver, önceliği doğru kurgula</div></div>
+      <div class="ok" id="vaka-ok" style="display:none">✓</div>
+    </button>
+    <button class="mod" data-git="sprint">
+      <div class="ikon" style="background:rgba(129,140,248,.16)">⚡</div>
+      <div><div class="ad">Bilgi Sprinti</div><div class="ac">60 saniyede en çok doğru cevap</div></div>
+      <div class="ok" id="sprint-ok" style="display:none">✓</div>
+    </button>
+    <button class="mod" data-git="esles">
+      <div class="ikon" style="background:rgba(34,211,238,.16)">🔗</div>
+      <div><div class="ad">Terim Eşleştirme</div><div class="ac">Terimi doğru tanımla</div></div>
+      <div class="ok" id="esles-ok" style="display:none">✓</div>
+    </button>
+
+    <div class="uyari">⚕️ Bu oyun yalnızca tekrar ve öğrenme amaçlıdır; güncel protokoller, ilaç kılavuzları ve öğretmen/hekim yönlendirmesi esas alınır.</div>
+  </section>
+
+  <!-- ============ OYUN EKRANI ============ -->
+  <section class="ekran" id="ek-oyun">
+    <div class="ust">
+      <button class="cikis" id="kapat">✕ Çık</button>
+      <div class="rozet">
+        <span class="pill" id="p-sure">00:00</span>
+        <span class="pill" id="p-skor">0 puan</span>
+      </div>
+    </div>
+    <div class="ilerleme">
+      <span id="oyun-ad">Acil Servis Vakası</span>
+      <span style="margin-left:auto" id="oyun-no">1 / 10</span>
+    </div>
+    <div class="bar"><i id="oyun-bar" style="width:10%"></i></div>
+    <div id="oyun-govde" style="margin-top:14px;flex:1"></div>
+  </section>
+
+  <!-- ============ TEKRAR DEFLERİ ============ -->
+  <section class="ekran" id="ek-defter">
+    <div class="ust">
+      <h1>Tekrar Defteri</h1>
+      <div class="rozet"><span class="pill" id="def-sayi">0 kayıt</span></div>
+    </div>
+    <div class="kart" id="def-liste"></div>
+    <button class="temizle" id="def-temizle">Tekrar defterini temizle</button>
+  </section>
+
+  <!-- ============ İLERLEME ============ -->
+  <section class="ekran" id="ek-istat">
+    <div class="ust">
+      <h1>İstatistikler</h1>
+      <div class="rozet"><span class="pill" id="ist-ozet">0 soru</span></div>
+    </div>
+    <div class="kart">
+      <h2>Genel</h2>
+      <div class="istat">
+        <div><b id="i-toplam">0</b><span>ÇÖZÜLEN</span></div>
+        <div><b id="i-dogru">0</b><span>DOĞRU</span></div>
+        <div><b id="i-oran">%0</b><span>BAŞARI</span></div>
+      </div>
+    </div>
+    <div class="kart" style="margin-top:12px">
+      <h2>Kategori Gücü</h2>
+      <div id="kat-liste"></div>
+    </div>
+  </section>
+
+  <!-- ============ AYARLAR ============ -->
+  <section class="ekran" id="ek-ayar">
+    <div class="ust"><h1>Ayarlar</h1></div>
+    <div class="kart">
+      <h2>Tercihler</h2>
+      <button class="mod" id="ay-ses" style="margin:0">
+        <div class="ikon" style="background:rgba(34,211,238,.16)">🔊</div>
+        <div><div class="ad">Ses efektleri</div><div class="ac" id="ay-ses-ac">Açık</div></div>
+      </button>
+      <button class="mod" id="ay-timer" style="margin:10px 0 0">
+        <div class="ikon" style="background:rgba(251,191,36,.16)">⏱️</div>
+        <div><div class="ad">Süre baskısı</div><div class="ac" id="ay-timer-ac">Soru başına 30 sn</div></div>
+      </button>
+    </div>
+    <div class="kart" style="margin-top:12px">
+      <h2>Veri</h2>
+      <p class="metin">Tüm ilerleme yalnızca bu cihazda saklanır. Tarayıcı verisini silersen kayıtlar kaybolur.</p>
+      <button class="temizle" id="ay-sifirla">İlerlemeyi sıfırla</button>
+    </div>
+    <div class="kart" style="margin-top:12px">
+      <h2>Hakkında</h2>
+      <p class="metin">Hemşirelik Akademi · <span id="ay-surum">1.0.0</span> · eğitim amaçlı tekrar oyunu. Sorular genel klinik bilgi düzeyindedir ve kişisel hasta kararı yerine geçmez.</p>
+    </div>
+  </section>
+
+  <nav class="alt" id="alt-menu">
+    <button data-sayfa="ana" class="secili"><span>🏠</span>Ana</button>
+    <button data-sayfa="defter"><span>📕</span>Defter</button>
+    <button data-sayfa="istat"><span>📊</span>İstatistik</button>
+    <button data-sayfa="ayar"><span>⚙️</span>Ayarlar</button>
+  </nav>
+</div>
+
+<div id="toast"></div>
+
+<script src="veri.js"></script>
+<script src="oyun.js"></script>
+<script>
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("service-worker.js").catch(function () { });
+  });
+}
+</script>
+</body>
+</html>
